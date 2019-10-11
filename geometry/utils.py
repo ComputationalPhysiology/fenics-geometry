@@ -1,8 +1,6 @@
 """ This library is based on the module pulse.geometry by Henrik Finsberg. It
 has been extended to account for arbitrary geometries.
 """
-
-import logging
 import os
 import h5py
 
@@ -28,49 +26,6 @@ except ImportError:
 
 mpi_comm_world = df.MPI.comm_world
 parallel_h5py = h5py.h5.get_config().mpi
-
-
-def make_logger(name, level=df.get_log_level()):
-    def log_if_rank_is_0(record):
-        if df.MPI.rank(mpi_comm_world) == 0:
-            return 1
-        else:
-            return 0
-
-    # Dummy object
-    class Object(object):
-        pass
-
-    mpi_filt = Object()
-    mpi_filt.filter = log_if_rank_is_0
-
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(0)
-    # formatter = logging.Formatter('%(message)s')
-    formatter = logging.Formatter(
-        ("%(asctime)s - " "%(name)s - " "%(levelname)s - " "%(message)s")
-    )
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    logger.addFilter(mpi_filt)
-
-    df.set_log_level(logging.WARNING)
-
-    ffc_logger = logging.getLogger("FFC")
-    ffc_logger.setLevel(logging.WARNING)
-    ffc_logger.addFilter(mpi_filt)
-
-    ufl_logger = logging.getLogger("UFL")
-    ufl_logger.setLevel(logging.WARNING)
-    ufl_logger.addFilter(mpi_filt)
-
-    return logger
-
-
-logger = make_logger(__name__)
 
 
 def dict_to_namedtuple(d, NamedTuple):
@@ -101,7 +56,6 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
 
     """
 
-    logger.info("\nLoad mesh from h5")
     # Set default groups
     ggroup = "{}/geometry".format(h5group)
     mgroup = "{}/mesh".format(ggroup)
@@ -114,7 +68,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
     # Check that the given file contains
     # the geometry in the given h5group
     if not check_h5group(h5name, mgroup, delete=False, comm=comm):
-        msg = ("Warning!\nGroup: '{}' does not exist in file:" "\n{}").format(
+        msg = ("Error!\nGroup: '{}' does not exist in file:" "\n{}").format(
             mgroup, h5name
         )
 
@@ -123,7 +77,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
         msg += "\nPossible values for the h5group are {}".format(keys)
         raise IOError(msg)
 
-    # Create a dummy object for easy parsing
+    # Dummy class to store attributes in
     class Geometry(object):
         pass
 
@@ -133,17 +87,18 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
 
         # Load mesh
         mesh = Mesh(comm)
-        read_h5file(h5file, mesh, mgroup, True)
+        h5file.read(mesh, mgroup, True)
         geo.mesh = mesh
 
         # Get mesh functions
-        for dim, attr in zip(range(4), ["vfun", "efun", "ffun", "cfun"]):
+        for dim, attr in zip(range(geo.mesh.topology().dim()),
+                                            ["vfun", "efun", "ffun", "cfun"]):
 
             dgroup = "{}/mesh/meshfunction_{}".format(ggroup, dim)
             mf = MeshFunction("size_t", mesh, dim, mesh.domains())
 
             if h5file.has_dataset(dgroup):
-                read_h5file(h5file, mf, dgroup)
+                h5file.read(mf, dgroup)
             setattr(geo, attr, mf)
 
         load_local_basis(h5file, lgroup, mesh, geo)
@@ -156,7 +111,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
         origmeshgroup = "{}/original_geometry".format(h5group)
         if h5file.has_dataset(origmeshgroup):
             original_mesh = Mesh(comm)
-            read_h5file(h5file, original_mesh, origmeshgroup, True)
+            h5file.read(original_mesh, origmeshgroup, True)
             setattr(geo, "original_geometry", original_mesh)
 
     for attr in ["f0", "s0", "n0", "r0", "c0", "l0", "cfun", "vfun", "efun", "ffun"]:
@@ -168,6 +123,10 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
 
 def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
 
+    if not isinstance(h5group, str):
+        msg = "Error! h5group has to be of type string. Your h5group is of type {}".format(type(h5group))
+        raise TypeError(msg)
+
     h5group_in_h5file = False
     if not os.path.isfile(h5name):
         return False
@@ -176,36 +135,29 @@ def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
     if not os.access(h5name, os.W_OK):
         filemode = "r"
         if delete:
-            logger.warning(
-                ("You do not have write access to file " "{}").format(h5name)
-            )
+            begin(df.LogLevel.WARNING,
+                "You do not have write access to file " "{}".format(h5name))
             delete = False
+            end()
 
     with open_h5py(h5name, filemode, comm) as h5file:
         if h5group in h5file:
             h5group_in_h5file = True
             if delete:
                 if parallel_h5py:
-                    logger.debug(("Deleting existing group: " "'{}'").format(h5group))
+                    begin(df.LogLevel.DEBUG,
+                            "Deleting existing group: " "'{}'".format(h5group))
                     del h5file[h5group]
+                    end()
 
                 else:
                     if df.MPI.rank(comm) == 0:
-                        logger.debug(
-                            ("Deleting existing group: " "'{}'").format(h5group)
-                        )
+                        begin(df.LogLevel.DEBUG,
+                            "Deleting existing group: " "'{}'".format(h5group))
                         del h5file[h5group]
+                        end()
 
     return h5group_in_h5file
-
-
-def read_h5file(h5file, obj, group, *args, **kwargs):
-
-    # Hack in order to work with fenics-adjoint
-    # if not hasattr(obj, "create_block_variable"):
-    #     obj.create_block_variable = lambda: None
-
-    h5file.read(obj, group, *args, **kwargs)
 
 
 def open_h5py(h5name, file_mode="a", comm=mpi_comm_world):
@@ -240,7 +192,7 @@ def load_local_basis(h5file, lgroup, mesh, geo):
         for name in names:
             lb = Function(V, name=name)
 
-            read_h5file(h5file, lb, lgroup + "/{}".format(name))
+            h5file.read(h5file, lb, lgroup + "/{}".format(name))
             setattr(geo, name, lb)
     else:
         setattr(geo, "circumferential", None)
@@ -283,7 +235,7 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
             func = Function(V, name=name)
             fsubgroup = fgroup + "/{}".format(name)
 
-            read_h5file(h5file, func, fsubgroup)
+            h5file.read(func, fsubgroup)
 
             setattr(geo, attrs[i], func)
 

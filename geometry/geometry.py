@@ -7,10 +7,8 @@ from collections import namedtuple
 from dolfin import (MeshFunction)
 import dolfin as df
 
-from .utils import (make_logger, set_namedtuple_default,
+from .utils import (set_namedtuple_default,
                     mpi_comm_world, load_geometry_from_h5)
-
-logger = make_logger(__name__)
 
 
 Markers = namedtuple('Markers', ['label', 'value', 'dim'])
@@ -138,9 +136,10 @@ class HeartGeometry(Geometry):
     @staticmethod
     def load_from_file(h5name, h5group, comm):
 
-        logger.debug("Load geometry from file {}".format(h5name))
-
-        geo = load_geometry_from_h5(h5name, h5group, include_sheets=True, comm=comm)
+        begin(LogLevel.PROGRESS, "Load mesh from h5 file")
+        geo = load_geometry_from_h5(h5name, h5group, include_sheets=True,
+                                    comm=comm)
+        end()
 
         f0 = get_attribute(geo, "f0", "fiber", None)
         s0 = get_attribute(geo, "s0", "sheet", None)
