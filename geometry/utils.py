@@ -27,6 +27,7 @@ except ImportError:
 
 mpi_comm_world = df.MPI.comm_world
 parallel_h5py = h5py.h5.get_config().mpi
+logger = make_logger(__name__)
 
 
 def dict_to_namedtuple(d, NamedTuple):
