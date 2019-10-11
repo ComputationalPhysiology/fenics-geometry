@@ -9,7 +9,7 @@ from dolfin import (MeshFunction)
 from .utils import (make_logger, set_namedtuple_default,
                     load_geometry_from_h5)
 
-logger = make_logger(__name__, dolfin.get_log_level())
+logger = make_logger(__name__)
 
 
 Markers = namedtuple('Markers', ['label', 'value', 'dim'])

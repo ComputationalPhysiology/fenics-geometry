@@ -3,13 +3,14 @@ has been extended to account for arbitrary geometries.
 """
 
 import logging
+import dolfin as df
 
 
 def dict_to_namedtuple(d, NamedTuple):
     pass
 
 
-def make_logger(name, level=parameters["log_level"]):
+def make_logger(name, level=df.get_log_level()):
     def log_if_process0(record):
         if dolfin.MPI.rank(mpi_comm_world()) == 0:
             return 1
