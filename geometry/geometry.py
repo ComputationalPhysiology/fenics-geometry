@@ -50,6 +50,14 @@ class Geometry(object):
 
 
     @property
+    def dx(self):
+        return df.dx(domain=self.mesh, subdomain_data=self.cfun)
+
+    @property
+    def ds(self):
+        return df.ds(domain=self.mesh, subdomain_data=self.ffun)
+
+    @property
     def vfun(self):
         return self.markerfunctions.vfun
 
