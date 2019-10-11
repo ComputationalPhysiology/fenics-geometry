@@ -8,5 +8,5 @@ setup(name='fenics-geometry',
       author_email='alexandra@simula.no',
       license='LGPL3',
       packages=['geometry'],
-      install_requires=['fenics'],
+      install_requires=['fenics', 'h5py'],
       zip_safe=False)
