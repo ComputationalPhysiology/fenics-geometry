@@ -21,6 +21,9 @@ set_namedtuple_default(MarkerFunctions)
 Microstructure = namedtuple("Microstructure", ["f0", "s0", "n0"])
 set_namedtuple_default(Microstructure)
 
+CRLBasis = namedtuple("CRLBasis", ["c0", "r0", "l0"])
+set_namedtuple_default(CRLBasis)
+
 
 def get_attribute(obj, key1, key2, default=None):
     f = getattr(obj, key1, None)
@@ -32,11 +35,12 @@ def get_attribute(obj, key1, key2, default=None):
 class Geometry(object):
 
     def __init__(self, mesh=None, markers=None, markerfunctions=None,
-                    microstructure=None):
+                    microstructure=None, crl_basis=None):
         self.mesh = mesh or {}
         self.markers = markers or {}
         self.markerfunctions = markerfunctions or {}
         self.microstructure = microstructure or {}
+        self.crl_basis = crl_basis or {}
 
 
     def add_mesh(self, label, mesh, markers=None):

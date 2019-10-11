@@ -6,7 +6,8 @@ import logging
 import os
 import h5py
 
-from dolfin import (HDF5File, Mesh, MeshFunction)
+from dolfin import (HDF5File, Mesh, MeshFunction,
+                    VectorElement, Function, FunctionSpace)
 import dolfin as df
 
 try:
@@ -27,16 +28,11 @@ except ImportError:
 
 mpi_comm_world = df.MPI.comm_world
 parallel_h5py = h5py.h5.get_config().mpi
-logger = make_logger(__name__)
-
-
-def dict_to_namedtuple(d, NamedTuple):
-    pass
 
 
 def make_logger(name, level=df.get_log_level()):
     def log_if_rank_is_0(record):
-        if df.MPI.rank(mpi_comm_world == 0):
+        if df.MPI.rank(mpi_comm_world) == 0:
             return 1
         else:
             return 0
@@ -72,6 +68,13 @@ def make_logger(name, level=df.get_log_level()):
     ufl_logger.addFilter(mpi_filt)
 
     return logger
+
+
+logger = make_logger(__name__)
+
+
+def dict_to_namedtuple(d, NamedTuple):
+    pass
 
 
 def set_namedtuple_default(NamedTuple, default=None):
@@ -271,9 +274,9 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
                 msg = ("H5File does not have dataset {}").format(fsubgroup)
                 logger.warning(msg)
 
-        elm = dolfin.VectorElement(family=family, cell=mesh.ufl_cell(),
+        elm = VectorElement(family=family, cell=mesh.ufl_cell(),
                                     degree=int(order), quad_scheme="default")
-        V = dolfin.FunctionSpace(mesh, elm)
+        V = FunctionSpace(mesh, elm)
 
         attrs = ["f0", "s0", "n0"]
         for i, name in enumerate(names):
