@@ -35,7 +35,7 @@ def dict_to_namedtuple(d, NamedTuple):
 
 def make_logger(name, level=df.get_log_level()):
     def log_if_rank_is_0(record):
-        if df.MPI.rank(mpi_comm_world == 0:
+        if df.MPI.rank(mpi_comm_world == 0):
             return 1
         else:
             return 0
