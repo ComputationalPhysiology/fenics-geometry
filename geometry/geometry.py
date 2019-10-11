@@ -43,21 +43,67 @@ class Geometry(object):
         self.crl_basis = crl_basis or {}
 
 
-    def add_mesh(self, label, mesh, markers=None):
-        try:
-            self.mesh[label] = mesh
-            self.markers[label] = markers or Markers()
-            self.markerfunctions[label] = markerfunctions or MarkerFunctions()
-            self.microstructure[label] = microstructure or None
-        except TypeError:
-            msg = "Can only set up multi-mesh geometry if Geometry() has been instantiated empty."
-            raise TypeError(msg)
-
-
     @classmethod
     def from_file(cls, h5name, h5group="", comm=None):
         comm = comm if comm is not None else mpi_comm_world
         return cls(**cls.load_from_file(h5name, h5group, comm))
+
+
+    @property
+    def vfun(self):
+        return self.markerfunctions.vfun
+
+    @property
+    def efun(self):
+        return self.markerfunctions.efun
+
+    @property
+    def ffun(self):
+        return self.markerfunctions.ffun
+
+    @property
+    def cfun(self):
+        return self.markerfunctions.cfun
+
+    @property
+    def f0(self):
+        return self.microstructure.f0
+
+    @property
+    def s0(self):
+        return self.microstructure.s0
+
+    @property
+    def n0(self):
+        return self.microstructure.n0
+
+    @property
+    def c0(self):
+        return self.crl_basis.c0
+
+    @property
+    def l0(self):
+        return self.crl_basis.c0
+
+    @property
+    def r0(self):
+        return self.crl_basis.c0
+
+
+
+class MixedGeometry(object):
+
+    def __init__(self, geometries=None, labels=None):
+        self.geometries = {}
+        for geo, l in zip(geometries, labels):
+            self.geometries[l] = geo
+
+
+    def add_geometry(self, geometry, label):
+        if not isinstance(geometry, Geometry):
+            msg = "Can only add instances of Geometry. You tried to add an instance of {}".format(type(geometry))
+            raise TypeError(msg)
+        self.geometries[label] = geometry
 
 
 class Geometry2D(Geometry):
