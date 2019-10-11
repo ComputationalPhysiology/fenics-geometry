@@ -50,6 +50,14 @@ class Geometry(object):
         return cls(**cls.load_from_file(h5name, h5group, comm))
 
 
+    def topology(self):
+        return self.mesh.topology()
+
+
+    def dim(self):
+        return self.mesh.geometry().dim()
+
+
     @property
     def dx(self):
         return df.dx(domain=self.mesh, subdomain_data=self.cfun)
