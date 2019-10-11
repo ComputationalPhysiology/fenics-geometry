@@ -7,7 +7,7 @@ from collections import namedtuple
 from dolfin import (MeshFunction)
 
 from .utils import (make_logger, set_namedtuple_default,
-                    load_geometry_from_h5)
+                    mpi_comm_world, load_geometry_from_h5)
 
 logger = make_logger(__name__)
 
@@ -52,7 +52,7 @@ class Geometry(object):
 
     @classmethod
     def from_file(cls, h5name, h5group="", comm=None):
-        comm = comm if comm is not None else mpi_comm_world()
+        comm = comm if comm is not None else mpi_comm_world
         return cls(**cls.load_from_file(h5name, h5group, comm))
 
 
