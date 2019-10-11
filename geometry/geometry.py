@@ -5,6 +5,7 @@ has been extended to account for arbitrary geometries.
 from collections import namedtuple
 
 from dolfin import (MeshFunction)
+import dolfin as df
 
 from .utils import (make_logger, set_namedtuple_default,
                     mpi_comm_world, load_geometry_from_h5)
