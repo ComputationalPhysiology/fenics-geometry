@@ -19,7 +19,7 @@ MarkerFunctions = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"]
 set_namedtuple_default(MarkerFunctions)
 
 Microstructure = namedtuple("Microstructure", ["f0", "s0", "n0"])
-set_default_none(Microstructure)
+set_namedtuple_default(Microstructure)
 
 
 def get_attribute(obj, key1, key2, default=None):
