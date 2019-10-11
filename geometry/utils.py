@@ -162,7 +162,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
     return geo
 
 
-def check_h5group(h5name, h5group, delete=False, comm=df.MPI.comm_world):
+def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
 
     h5group_in_h5file = False
     if not os.path.isfile(h5name):
@@ -204,7 +204,7 @@ def read_h5file(h5file, obj, group, *args, **kwargs):
     h5file.read(obj, group, *args, **kwargs)
 
 
-def open_h5py(h5name, file_mode="a", comm=mpi_comm_world()):
+def open_h5py(h5name, file_mode="a", comm=mpi_comm_world):
 
     if parallel_h5py:
         if has_mpi4py and has_petsc4py:
