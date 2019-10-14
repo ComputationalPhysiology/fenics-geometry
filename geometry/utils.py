@@ -95,17 +95,21 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
 
         # Get mesh functions
         meshfunctions = ["vfun", "efun", "ffun", "cfun"]
-        if geo.mesh.topology().dim() == 2:
-            meshfunctions = ["vfun", "ffun", "cfun"]
 
         for dim, attr in enumerate(meshfunctions):
-
+            # Skip efun if topological dimension is 2
+            if attr == "efun":
+                continue
             dgroup = "{}/mesh/meshfunction_{}".format(ggroup, dim)
-            mf = MeshFunction("size_t", mesh, dim, mesh.domains())
+            if mesh.topology().dim() == 2 and dim > 0:
+                mf = MeshFunction("size_t", mesh, dim-1, mesh.domains())
+            else:
+                mf = MeshFunction("size_t", mesh, dim, mesh.domains())
 
             if h5file.has_dataset(dgroup):
                 h5file.read(mf, dgroup)
                 setattr(geo, attr, mf)
+
 
         load_local_basis(h5file, lgroup, mesh, geo)
         load_microstructure(h5file, fgroup, mesh, geo, include_sheets)

@@ -18,7 +18,7 @@ set_namedtuple_default(Markers)
 MarkerFunctions = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
 set_namedtuple_default(MarkerFunctions)
 
-MarkerFunctions2D = namedtuple("MarkerFunctions2D", ["vfun", "ffun", "cfun"])
+MarkerFunctions2D = namedtuple("MarkerFunctions2D", ["vfun", "ffun"])
 set_namedtuple_default(MarkerFunctions2D)
 
 Microstructure = namedtuple("Microstructure", ["f0", "s0", "n0"])
