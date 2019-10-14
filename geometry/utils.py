@@ -94,15 +94,18 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
         geo.mesh = mesh
 
         # Get mesh functions
-        for dim, attr in zip(range(geo.mesh.topology().dim()),
-                                            ["vfun", "efun", "ffun", "cfun"]):
+        meshfunctions = ["vfun", "efun", "ffun", "cfun"]
+        if geo.mesh.topology().dim() == 2:
+            meshfunctions = ["vfun", "ffun", "cfun"]
+
+        for dim, attr in enumerate(meshfunctions):
 
             dgroup = "{}/mesh/meshfunction_{}".format(ggroup, dim)
             mf = MeshFunction("size_t", mesh, dim, mesh.domains())
 
             if h5file.has_dataset(dgroup):
                 h5file.read(mf, dgroup)
-            setattr(geo, attr, mf)
+                setattr(geo, attr, mf)
 
         load_local_basis(h5file, lgroup, mesh, geo)
         load_microstructure(h5file, fgroup, mesh, geo, include_sheets)
@@ -182,6 +185,15 @@ def save_geometry_to_h5(mesh, h5name, h5group="", markers=None,
         mgroup = "{}/mesh".format(ggroup)
         h5file.write(mesh, mgroup)
 
+        # Save markerfunctions
+        df.begin(LogLevel.PROGRESS, "Saving marker functions.")
+        for dim, key in enumerate(markerfunctions.keys()):
+            mf = markerfunctions[key]
+            if mf is not None:
+                dgroup = "{}/mesh/meshfunction_{}".format(ggroup, dim)
+                h5file.write(mf, dgroup)
+        df.end()
+
         # Save markers
         df.begin(LogLevel.PROGRESS, "Saving markers.")
         for name, (marker, dim) in markers.items():
@@ -191,15 +203,6 @@ def save_geometry_to_h5(mesh, h5name, h5group="", markers=None,
                 if h5file.has_dataset(dgroup):
                     aname = "marker_name_{}".format(name)
                     h5file.attributes(dgroup)[aname] = marker
-        df.end()
-
-        # Save markerfunctions
-        df.begin(LogLevel.PROGRESS, "Saving marker functions.")
-        for key in markerfunctions.keys():
-            mf = markerfunctions[key]
-            if mf is not None:
-                dgroup = "{}/mesh/meshfunction_{}".format(ggroup, key)
-                h5file.write(mf, dgroup)
         df.end()
 
         # Save microstructure

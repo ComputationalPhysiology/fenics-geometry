@@ -52,6 +52,37 @@ class Geometry(object):
         return cls(**cls.load_from_file(h5name, h5group, comm))
 
 
+    @staticmethod
+    def load_from_file(h5name, h5group, comm):
+
+        df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
+        geo = load_geometry_from_h5(h5name, h5group, include_sheets=False,
+                                    comm=comm)
+        df.end()
+
+        f0 = get_attribute(geo, "f0", "fiber", None)
+        s0 = get_attribute(geo, "s0", "sheet", None)
+        n0 = get_attribute(geo, "n0", "sheet_normal", None)
+
+        c0 = get_attribute(geo, "c0", "circumferential", None)
+        r0 = get_attribute(geo, "r0", "radial", None)
+        l0 = get_attribute(geo, "l0", "longitudinal", None)
+
+        vfun = get_attribute(geo, "vfun", None)
+        ffun = get_attribute(geo, "ffun", None)
+        cfun = get_attribute(geo, "cfun", "sfun", None)
+
+        kwargs = {
+            "mesh": geo.mesh,
+            "markers": geo.markers,
+            "markerfunctions": MarkerFunctions(vfun=vfun, ffun=ffun, cfun=cfun),
+            "microstructure": Microstructure(f0=f0, s0=s0, n0=n0),
+            "crl_basis": CRLBasis(c0=c0, r0=r0, l0=l0),
+        }
+
+        return kwargs
+
+
     def save(self, h5name, h5group="", other_functions=None,
                 other_attributes=None, overwrite_file=False,
                 overwrite_group=True):
