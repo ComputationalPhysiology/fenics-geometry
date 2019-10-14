@@ -4,7 +4,7 @@ has been extended to account for arbitrary geometries.
 import os
 import h5py
 
-from dolfin import (HDF5File, Mesh, MeshFunction,
+from dolfin import (HDF5File, Mesh, MeshFunction, LogLevel,
                     VectorElement, Function, FunctionSpace)
 import dolfin as df
 
@@ -28,8 +28,11 @@ mpi_comm_world = df.MPI.comm_world
 parallel_h5py = h5py.h5.get_config().mpi
 
 
-def dict_to_namedtuple(d, NamedTuple):
-    pass
+def namedtuple_as_dict(named_tuple):
+    try:
+        return named_tuple._asdict()
+    except AttributeError:
+        return named_tuple
 
 
 def set_namedtuple_default(NamedTuple, default=None):
@@ -114,11 +117,161 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
             h5file.read(original_mesh, origmeshgroup, True)
             setattr(geo, "original_geometry", original_mesh)
 
-    for attr in ["f0", "s0", "n0", "r0", "c0", "l0", "cfun", "vfun", "efun", "ffun"]:
+    for attr in ["f0", "s0", "n0", "r0", "c0", "l0", "cfun", "vfun", "efun",
+                "ffun"]:
         if not hasattr(geo, attr):
             setattr(geo, attr, None)
 
     return geo
+
+
+def save_geometry_to_h5(mesh, h5name, h5group="", markers=None,
+                        markerfunctions={}, microstructure={}, local_basis={},
+                        comm=mpi_comm_world, other_functions={},
+                        other_attributes={}, overwrite_file=False,
+                        overwrite_group=True):
+    """
+    Save geometry and other geometrical functions to a HDF file.
+
+    Parameters
+    ----------
+    mesh : :class:`dolfin.mesh`
+        The mesh
+    h5name : str
+        Path to the file
+    h5group : str
+        Folder within the file. Default is "" which means in
+        the top folder.
+    markers : dict
+        A dictionary with markers. See `get_markers`.
+    fields : list
+        A list of functions for the microstructure
+    local_basis : list
+        A list of functions for the crl basis
+    meshfunctions : dict
+        A dictionary with keys being the dimensions the the values
+        beeing the meshfunctions.
+    comm : :class:`dolfin.MPI`
+        MPI communicator
+    other_functions : dict
+        Dictionary with other functions you want to save
+    other_attributes: dict
+        Dictionary with other attributes you want to save
+    overwrite_file : bool
+        If true, and the file exists, the file will be overwritten (default: False)
+    overwrite_group : bool
+        If true and h5group exist, the group will be overwritten.
+
+    """
+    h5name = os.path.splitext(h5name)[0] + ".h5"
+
+    assert isinstance(mesh, Mesh)
+
+    file_mode = "a" if os.path.isfile(h5name) and not overwrite_file else "w"
+
+    # IF we should append the file but overwrite the group we need to
+    # check that the group does not exist. If so we need to open it in
+    # h5py and delete it.
+    if file_mode == "a" and overwrite_group and h5group != "":
+        check_h5group(h5name, h5group, delete=True, comm=comm)
+
+    with HDF5File(comm, h5name, file_mode) as h5file:
+
+        # Save mesh
+        ggroup = "{}/geometry".format(h5group)
+        mgroup = "{}/mesh".format(ggroup)
+        h5file.write(mesh, mgroup)
+
+        # Save markers
+        df.begin(LogLevel.PROGRESS, "Saving markers.")
+        for name, (marker, dim) in markers.items():
+            for key_str in ["domain", "meshfunction"]:
+                dgroup = "{}/mesh/{}_{}".format(ggroup, key_str, dim)
+
+                if h5file.has_dataset(dgroup):
+                    aname = "marker_name_{}".format(name)
+                    h5file.attributes(dgroup)[aname] = marker
+        df.end()
+
+        # Save markerfunctions
+        df.begin(LogLevel.PROGRESS, "Saving marker functions.")
+        for key in markerfunctions.keys():
+            mf = markerfunctions[key]
+            if mf is not None:
+                dgroup = "{}/mesh/meshfunction_{}".format(ggroup, key)
+                h5file.write(mf, dgroup)
+        df.end()
+
+        # Save microstructure
+        df.begin(LogLevel.PROGRESS, "Saving microstructure.")
+        for key in microstructure.keys():
+            ms = microstructure[key]
+            if ms is not None:
+                name = "_".join(filter(None, [str(ms), key]))
+                fsubgroup = "{}/{}".format(fgroup, name)
+                h5file.write(microstructure[key], fsubgroup)
+                h5file.attributes(fsubgroup)["name"] = key
+                elm = ms.function_space().ufl_element()
+
+        try:
+            family, degree = elm.family(), elm.degree()
+            fspace = "{}_{}".format(family, degree)
+            h5file.attributes(fgroup)["space"] = fspace
+            h5file.attributes(fgroup)["names"] = ":".join(microstructure.keys())
+        except:
+            pass
+        df.end()
+
+        # Save local basis
+        df.begin(LogLevel.PROGRESS, "Saving local basis.")
+        for key in local_basis.keys():
+            ml = local_basis[key]
+            if ml is not None:
+                lgroup = "{}/local basis functions".format(h5group)
+                h5file.write(ml, lgroup + "/{}".format(key))
+                elm = ml.function_space().ufl_element()
+
+        try:
+            family, degree = elm.family(), elm.degree()
+            lspace = "{}_{}".format(family, degree)
+            h5file.attributes(lgroup)["space"] = lspace
+            h5file.attributes(lgroup)["names"] = ":".join(local_basis.keys())
+        except:
+            pass
+        df.end()
+
+        # Save other functions
+        df.begin(LogLevel.PROGRESS, "Saving other functions")
+        for key in other_functions.keys():
+            mo = other_functions[key]
+            if mo is not None:
+                fungroup = "/".join([h5group, key])
+                h5file.write(mo, fungroup)
+                elm = mo.function_space().ufl_element()
+
+        try:
+            family, degree, vsize = elm.family(), elm.degree(), elm.value_size()
+            fspace = "{}_{}".format(family, degree)
+            h5file.attributes(fungroup)["space"] = fspace
+            h5file.attributes(fungroup)["value_size"] = vsize
+        except:
+            pass
+        df.end()
+
+        # Save other attributes
+        df.begin(LogLevel.PROGRESS, "Saving other attributes")
+        for key in other_attributes:
+            if isinstance(other_attributes[key], str) and isinstance(key, str):
+                h5file.attributes(h5group)[key] = other_attributes[key]
+            else:
+                begin(df.LogLevel.WARNING,
+                    "Invalid attribute {} = {}".format(key,
+                    other_attributes[key]))
+                end()
+        df.end()
+
+    df.begin(df.LogLevel.INFO, "Geometry saved to {}".format(h5name))
+    df.end()
 
 
 def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
@@ -135,27 +288,27 @@ def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
     if not os.access(h5name, os.W_OK):
         filemode = "r"
         if delete:
-            begin(df.LogLevel.WARNING,
+            df.begin(df.LogLevel.WARNING,
                 "You do not have write access to file " "{}".format(h5name))
             delete = False
-            end()
+            df.end()
 
     with open_h5py(h5name, filemode, comm) as h5file:
         if h5group in h5file:
             h5group_in_h5file = True
             if delete:
                 if parallel_h5py:
-                    begin(df.LogLevel.DEBUG,
+                    df.begin(df.LogLevel.DEBUG,
                             "Deleting existing group: " "'{}'".format(h5group))
                     del h5file[h5group]
-                    end()
+                    df.end()
 
                 else:
                     if df.MPI.rank(comm) == 0:
-                        begin(df.LogLevel.DEBUG,
+                        df.begin(df.LogLevel.DEBUG,
                             "Deleting existing group: " "'{}'".format(h5group))
                         del h5file[h5group]
-                        end()
+                        df.end()
 
     return h5group_in_h5file
 
@@ -185,9 +338,9 @@ def load_local_basis(h5file, lgroup, mesh, geo):
         namesstr = local_basis_attrs["names"]
         names = namesstr.split(":")
 
-        elm = dolfin.VectorElement(family=family, cell=mesh.ufl_cell(),
+        elm = VectorElement(family=family, cell=mesh.ufl_cell(),
                                     degree=int(order), quad_scheme="default")
-        V = dolfin.FunctionSpace(mesh, elm)
+        V = FunctionSpace(mesh, elm)
 
         for name in names:
             lb = Function(V, name=name)

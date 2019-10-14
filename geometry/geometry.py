@@ -4,11 +4,12 @@ has been extended to account for arbitrary geometries.
 
 from collections import namedtuple
 
-from dolfin import (MeshFunction)
+from dolfin import (MeshFunction, LogLevel)
 import dolfin as df
 
-from .utils import (set_namedtuple_default,
-                    mpi_comm_world, load_geometry_from_h5)
+from .utils import (set_namedtuple_default, namedtuple_as_dict,
+                    mpi_comm_world, load_geometry_from_h5,
+                    save_geometry_to_h5)
 
 
 Markers = namedtuple('Markers', ['label', 'value', 'dim'])
@@ -29,7 +30,7 @@ set_namedtuple_default(CRLBasis)
 
 def get_attribute(obj, key1, key2, default=None):
     f = getattr(obj, key1, None)
-    if f is None:
+    if f is None and key2 is not None:
         f = getattr(obj, key2, default)
     return f
 
@@ -49,6 +50,20 @@ class Geometry(object):
     def from_file(cls, h5name, h5group="", comm=None):
         comm = comm if comm is not None else mpi_comm_world
         return cls(**cls.load_from_file(h5name, h5group, comm))
+
+
+    def save(self, h5name, h5group="", other_functions=None,
+                other_attributes=None, overwrite_file=False,
+                overwrite_group=True):
+        df.begin(LogLevel.PROGRESS, "Saving geometry to {}...".format(h5name))
+        save_geometry_to_h5(self.mesh, h5name, h5group=h5group,
+                    markers=self.markers,
+                    markerfunctions=namedtuple_as_dict(self.markerfunctions),
+                    microstructure=namedtuple_as_dict(self.microstructure),
+                    local_basis=namedtuple_as_dict(self.crl_basis),
+                    overwrite_file=overwrite_file,
+                    overwrite_group=overwrite_group)
+        df.end()
 
 
     def topology(self):
@@ -139,10 +154,10 @@ class HeartGeometry(Geometry):
     @staticmethod
     def load_from_file(h5name, h5group, comm):
 
-        begin(LogLevel.PROGRESS, "Load mesh from h5 file")
+        df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
         geo = load_geometry_from_h5(h5name, h5group, include_sheets=True,
                                     comm=comm)
-        end()
+        df.end()
 
         f0 = get_attribute(geo, "f0", "fiber", None)
         s0 = get_attribute(geo, "s0", "sheet", None)
