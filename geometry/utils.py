@@ -94,17 +94,12 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
         geo.mesh = mesh
 
         # Get mesh functions
-        meshfunctions = ["vfun", "efun", "ffun", "cfun"]
+        meshfunctions = ["vfun", "efun", "ffun", "cfun"]\
+            if mesh.topology().dim() == 3 else ["vfun", "ffun", "cfun"]
 
         for dim, attr in enumerate(meshfunctions):
-            # Skip efun if topological dimension is 2
-            if attr == "efun":
-                continue
             dgroup = "{}/mesh/meshfunction_{}".format(ggroup, dim)
-            if mesh.topology().dim() == 2 and dim > 0:
-                mf = MeshFunction("size_t", mesh, dim-1, mesh.domains())
-            else:
-                mf = MeshFunction("size_t", mesh, dim, mesh.domains())
+            mf = MeshFunction("size_t", mesh, dim, mesh.domains())
 
             if h5file.has_dataset(dgroup):
                 h5file.read(mf, dgroup)
@@ -124,8 +119,11 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
             h5file.read(original_mesh, origmeshgroup, True)
             setattr(geo, "original_geometry", original_mesh)
 
-    for attr in ["f0", "s0", "n0", "r0", "c0", "l0", "cfun", "vfun", "efun",
-                "ffun"]:
+    for attr in meshfunctions:
+        if not hasattr(geo, attr):
+            setattr(geo, attr, None)
+
+    for attr in (["f0", "s0", "n0", "r0", "c0", "l0"]):
         if not hasattr(geo, attr):
             setattr(geo, attr, None)
 
@@ -401,9 +399,9 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
 
 
 def load_markers(h5file, mesh, ggroup, dgroup):
+    markers = {}
     try:
-        markers = {}
-        for dim in range(mesh.ufl_domain().topological_dimension() + 1):
+        for dim in range(mesh.topology().dim()+1):
             for key_str in ["domain", "meshfunction"]:
                 dgroup = "{}/mesh/{}_{}".format(ggroup, key_str, dim)
 
@@ -424,8 +422,8 @@ def load_markers(h5file, mesh, ggroup, dgroup):
                         markers[name] = (int(marker), dim)
 
     except Exception as ex:
-        logger.info("Unable to load makers")
-        logger.info(ex)
+        begin(LogLevel.INFO, "Unable to load makers")
         markers = get_markers()
+        end()
 
     return markers

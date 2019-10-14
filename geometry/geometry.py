@@ -18,7 +18,7 @@ set_namedtuple_default(Markers)
 MarkerFunctions = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
 set_namedtuple_default(MarkerFunctions)
 
-MarkerFunctions2D = namedtuple("MarkerFunctions2D", ["vfun", "ffun"])
+MarkerFunctions2D = namedtuple("MarkerFunctions2D", ["vfun", "ffun", "cfun"])
 set_namedtuple_default(MarkerFunctions2D)
 
 Microstructure = namedtuple("Microstructure", ["f0", "s0", "n0"])
@@ -52,8 +52,8 @@ class Geometry(object):
         return cls(**cls.load_from_file(h5name, h5group, comm))
 
 
-    @staticmethod
-    def load_from_file(h5name, h5group, comm):
+    @classmethod
+    def load_from_file(cls, h5name, h5group, comm):
 
         df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
         geo = load_geometry_from_h5(h5name, h5group, include_sheets=False,
@@ -69,13 +69,15 @@ class Geometry(object):
         l0 = get_attribute(geo, "l0", "longitudinal", None)
 
         vfun = get_attribute(geo, "vfun", None)
+        efun = get_attribute(geo, "efun", None)
         ffun = get_attribute(geo, "ffun", None)
         cfun = get_attribute(geo, "cfun", "sfun", None)
 
         kwargs = {
             "mesh": geo.mesh,
             "markers": geo.markers,
-            "markerfunctions": MarkerFunctions(vfun=vfun, ffun=ffun, cfun=cfun),
+            "markerfunctions": MarkerFunctions(vfun=vfun, efun=efun, ffun=ffun,
+                                                cfun=cfun),
             "microstructure": Microstructure(f0=f0, s0=s0, n0=n0),
             "crl_basis": CRLBasis(c0=c0, r0=r0, l0=l0),
         }
@@ -173,7 +175,43 @@ class MixedGeometry(object):
 class Geometry2D(Geometry):
 
     def __init__(self, *args, **kwargs):
+        if not isinstance(kwargs['markerfunctions'], MarkerFunctions2D):
+            msg = "Marker functions is of type {}. Type {} is required.".format(
+                    type(kwargs['markerfunctions']), MarkerFunctions2D
+            )
+            raise TypeError(msg)
         super(Geometry2D, self).__init__(*args, **kwargs)
+
+
+    @classmethod
+    def load_from_file(cls, h5name, h5group, comm):
+
+        df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
+        geo = load_geometry_from_h5(h5name, h5group, include_sheets=False,
+                                    comm=comm)
+        df.end()
+
+        f0 = get_attribute(geo, "f0", "fiber", None)
+        s0 = get_attribute(geo, "s0", "sheet", None)
+        n0 = get_attribute(geo, "n0", "sheet_normal", None)
+
+        c0 = get_attribute(geo, "c0", "circumferential", None)
+        r0 = get_attribute(geo, "r0", "radial", None)
+        l0 = get_attribute(geo, "l0", "longitudinal", None)
+
+        vfun = get_attribute(geo, "vfun", None)
+        ffun = get_attribute(geo, "ffun", None)
+        cfun = get_attribute(geo, "cfun", "sfun", None)
+
+        kwargs = {
+            "mesh": geo.mesh,
+            "markers": geo.markers,
+            "markerfunctions": MarkerFunctions2D(vfun=vfun, ffun=ffun, cfun=cfun),
+            "microstructure": Microstructure(f0=f0, s0=s0, n0=n0),
+            "crl_basis": CRLBasis(c0=c0, r0=r0, l0=l0),
+        }
+
+        return kwargs
 
 
 class HeartGeometry(Geometry):
