@@ -29,6 +29,12 @@ parallel_h5py = h5py.h5.get_config().mpi
 
 
 def namedtuple_as_dict(named_tuple):
+    """Returns an ordered dictionary of the namedtuple object.
+
+    :param namedtuple named_tuple: namedtuple object
+    :returns An ordered dictionary version of named_tuple
+    :rtype dict
+    """
     try:
         return named_tuple._asdict()
     except AttributeError:
@@ -36,6 +42,12 @@ def namedtuple_as_dict(named_tuple):
 
 
 def set_namedtuple_default(NamedTuple, default=None):
+    """Set default values of a namedtuple type. None by default.
+
+    :param namedtuple NamedTuple: namedtuple type
+    :param object default: default value
+    """
+
     NamedTuple.__new__.__defaults__ = (default,) * len(NamedTuple._fields)
 
 
