@@ -29,10 +29,10 @@ install:
   - conda config --add channels conda-forge
 
   # Set up environment
-  - conda create -n m3h3 pulse pytest
+  - conda create -n fenics-geometry fenics pytest
 
   # Activate environment
-  - source activate m3h3
+  - source activate fenics-geometry
   - python setup.py install
 
   # Useful for debugging any issues with conda
