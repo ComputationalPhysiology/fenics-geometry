@@ -105,10 +105,7 @@ def test_open_h5py(h5name):
     from h5py import File
     h5file = open_h5py(h5name)
     assert isinstance(h5file, File)
-
-
-def test_load_local_basis(h5file):
-    pass
+    h5file.close()
 
 
 @fixture
