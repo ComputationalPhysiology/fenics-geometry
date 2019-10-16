@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ComputationalPhysiology/fenics-geometry.svg?branch=master)](https://travis-ci.org/ComputationalPhysiology/fenics-geometry)
+
 # fenics-geometry
 
 A library handling geometries for Fenics-based problems. Based geometry.py as part of [pulse](https://github.com/ComputationalPhysiology/pulse) by Henrik Finsberg, and adapted by Alexandra Diem to fit arbitrary geometries.
