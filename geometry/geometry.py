@@ -175,7 +175,8 @@ class MixedGeometry(object):
 class Geometry2D(Geometry):
 
     def __init__(self, *args, **kwargs):
-        if not isinstance(kwargs['markerfunctions'], MarkerFunctions2D):
+        if 'markerfunctions' in kwargs and\
+                not isinstance(kwargs['markerfunctions'], MarkerFunctions2D):
             msg = "Marker functions is of type {}. Type {} is required.".format(
                     type(kwargs['markerfunctions']), MarkerFunctions2D
             )
