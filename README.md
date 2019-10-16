@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/KVSlab/fenics-geometry.svg?branch=master)](https://travis-ci.org/KVSlab/fenics-geometry)
+[![Build Status](https://travis-ci.org/ComputationalPhysiology/fenics-geometry.svg?branch=master)](https://travis-ci.org/ComputationalPhysiology/fenics-geometry)
 
 # fenics-geometry
 
