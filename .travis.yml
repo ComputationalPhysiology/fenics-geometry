@@ -32,7 +32,8 @@ install:
   - conda create -n fenics-geometry
 
   # Activate environment
-  - source activate fenics-geometry
+  - source activate fenics-geometry fenics
+  - pip uninstall h5py
   - pip install -r requirements.txt
   - python setup.py install
 
