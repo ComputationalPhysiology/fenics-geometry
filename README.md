@@ -74,3 +74,7 @@ Documentation can be found at [kvslab.github.io/fenics-geometry](https://kvslab.
 pip uninstall h5py
 pip install h5py --no-binary=h5py
 ```
+* If you installed FEniCS using `conda` and encouter a `Fatal Python error: Aborted` with `<frozen importlib._bootstrap>` messages you need to specify the build for FEniCS during installation for `h5py` to work:
+```
+conda install fenics=2019.1.0=py37_5
+```
