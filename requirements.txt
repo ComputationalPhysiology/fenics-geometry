@@ -1,7 +1,4 @@
 pytest
-sphinx
-sphinx_rtd_theme
-m2r
 fenics
 --no-binary=h5py
 h5py
