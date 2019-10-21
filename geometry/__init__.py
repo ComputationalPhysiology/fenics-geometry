@@ -6,4 +6,4 @@ from geometry.geometry import (Geometry, Geometry2D, HeartGeometry,
 
 import geometry.utils
 
-from .example_meshes import example_meshes
+from geometry.example_meshes import example_meshes
