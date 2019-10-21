@@ -1,4 +1,4 @@
 sphinx
-sphinx_rtd_theme
 sphinxcontrib-fulltoc
+sphinx_rtd_theme
 m2r
