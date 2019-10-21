@@ -5,9 +5,11 @@
 
 A library handling geometries for Fenics-based problems. Based geometry.py as part of [pulse](https://github.com/ComputationalPhysiology/pulse) by Henrik Finsberg, and adapted by Alexandra Diem to fit arbitrary geometries.
 
+
 ## Overview
 
 `fenics-geometry` provides a conventient way to create meshes for [FEniCS](https://fenicsproject.org), including cardiac meshes.
+
 
 ## Installation instructions
 
@@ -41,12 +43,13 @@ docker pull akdiem/fenics-geometry:latest
 ```
 -->
 
-## Requirements
+### Requirements
 
 * FEniCS version 2019.1.0 or newer
 
 Note that if you install FEniCS using anaconda then you will not get support for parallel HDF5
 see e.g [this issue](https://github.com/conda-forge/hdf5-feedstock/issues/51). We recommend installing FEniCS using [Docker](https://fenicsproject.org/download/)
+
 
 ## Getting started
 
