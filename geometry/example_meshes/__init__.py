@@ -7,7 +7,7 @@ def join(p):
     return os.path.join(current, p)
 
 
-mesh_paths = {
+example_meshes = {
     "simple_ellipsoid": join("simple_ellipsoid.h5"),
     "prolate_ellipsoid": join("prolate_ellipsoid.h5"),
     "biv_ellipsoid": join("biv_ellipsoid.h5"),

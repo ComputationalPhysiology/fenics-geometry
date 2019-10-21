@@ -5,3 +5,5 @@ from geometry.geometry import (Geometry, Geometry2D, HeartGeometry,
                                 Microstructure)
 
 import geometry.utils
+
+from .example_meshes import example_meshes
