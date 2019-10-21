@@ -12,6 +12,7 @@ Welcome to fenics-geometry's documentation!
 
    readme
    changelog
+   modules
 
 
 
