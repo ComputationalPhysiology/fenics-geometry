@@ -34,6 +34,7 @@ release = '2019.1.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinxcontrib.fulltoc',
     'm2r',
 ]
 
