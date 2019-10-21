@@ -45,11 +45,11 @@ class Geometry(object):
     @classmethod
     def from_file(cls, h5name, h5group="", comm=None):
         comm = comm if comm is not None else mpi_comm_world
-        return cls(**cls.load_from_file(h5name, h5group, comm))
+        return cls(**cls._load_from_file(h5name, h5group, comm))
 
 
     @classmethod
-    def load_from_file(cls, h5name, h5group, comm):
+    def _load_from_file(cls, h5name, h5group, comm):
 
         df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
         geo = load_geometry_from_h5(h5name, h5group, include_sheets=False,
@@ -185,7 +185,7 @@ class Geometry2D(Geometry):
 
 
     @classmethod
-    def load_from_file(cls, h5name, h5group, comm):
+    def _load_from_file(cls, h5name, h5group, comm):
 
         df.begin(LogLevel.PROGRESS, "Load mesh from h5 file")
         geo = load_geometry_from_h5(h5name, h5group, include_sheets=False,
