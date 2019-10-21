@@ -1,5 +1,6 @@
 from setuptools import setup
 import os
+import re
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,7 +17,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 setup(name='fenics-geometry',
-      version=find_version("src", "pip", "__init__.py"),
+      version=find_version("geometry", "__init__.py"),
       description='A library handling geometries for Fenics-based problems. Based on pulse.geometry by Henrik Finsberg',
       url='https://github.com/ComputationalPhysiology/fenics-geometry',
       author='Alexandra K. Diem',
