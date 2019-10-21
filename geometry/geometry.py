@@ -157,7 +157,7 @@ class Geometry(object):
 
 
 
-class MixedGeometry(object):
+class MixedMeshGeometry(object):
 
     def __init__(self, geometries=None, labels=None):
         self.geometries = {}
@@ -165,7 +165,7 @@ class MixedGeometry(object):
             self.geometries[l] = geo
 
 
-    def add_geometry(self, geometry, label):
+    def add_mesh(self, geometry, label):
         if not isinstance(geometry, Geometry):
             msg = "Can only add instances of Geometry. You tried to add an instance of {}".format(type(geometry))
             raise TypeError(msg)
