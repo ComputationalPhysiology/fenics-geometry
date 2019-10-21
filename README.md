@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/ComputationalPhysiology/fenics-geometry.svg?branch=master)](https://travis-ci.org/ComputationalPhysiology/fenics-geometry)
+[![Build Status](https://travis-ci.org/ComputationalPhysiology/fenics-geometry.svg?branch=master)](https://travis-ci.org/ComputationalPhysiology/fenics-geometry) [![Documentation Status](https://readthedocs.org/projects/fenics-geometry/badge/?version=latest)](https://fenics-geometry.readthedocs.io/en/latest/?badge=latest)
+
 
 # fenics-geometry
 
