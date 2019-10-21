@@ -13,6 +13,7 @@ A library handling geometries for Fenics-based problems. Based geometry.py as pa
 
 ## Installation instructions
 
+
 ### Install with pip
 
 <!--
@@ -43,6 +44,7 @@ docker pull akdiem/fenics-geometry:latest
 ```
 -->
 
+
 ### Requirements
 
 * FEniCS version 2019.1.0 or newer
@@ -55,21 +57,21 @@ see e.g [this issue](https://github.com/conda-forge/hdf5-feedstock/issues/51). W
 
 Check out the demos in the demo folder.
 
-<!--
+
 ## Automated test
 
 Test are provided in the folder [`tests`](tests). You can run the test
 with `pytest`
 ```
-python -m pytest tests -vv
+pytest -xv tests/
 ```
--->
+The tests are automatically run on [TravisCI](https://travis-ci.org/ComputationalPhysiology/fenics-geometry).
 
-<!--
+
 ## Documentation
 
-Documentation can be found at [kvslab.github.io/fenics-geometry](https://kvslab.github.io/fenics-geometry)
--->
+The documentation is built using ReadTheDocs and can be found at [https://fenics-geometry.readthedocs.io](https://fenics-geometry.readthedocs.io).
+
 
 ## Known issues
 
