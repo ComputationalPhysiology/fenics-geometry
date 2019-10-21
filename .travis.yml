@@ -12,6 +12,11 @@ matrix:
         - os: linux
           python: 3.6.7
 
+# blocklist
+branches:
+  except:
+  - docs
+
 
 install:
   - sudo apt-get update
