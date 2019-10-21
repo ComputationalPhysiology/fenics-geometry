@@ -5,7 +5,6 @@ from geometry import Geometry, example_meshes
 
 
 geo = Geometry.from_file(example_meshes['simple_ellipsoid'])
-# geo = pulse.Geometry.from_file(pulse.mesh_paths['simple_ellipsoid'])
 
 activation = dolfin.Function(dolfin.FunctionSpace(geo.mesh, "R", 0))
 activation.assign(dolfin.Constant(0.2))
