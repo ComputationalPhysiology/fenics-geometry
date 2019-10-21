@@ -11,10 +11,6 @@ from .utils import (set_namedtuple_default, namedtuple_as_dict,
                     mpi_comm_world, load_geometry_from_h5,
                     save_geometry_to_h5)
 
-
-Markers = namedtuple('Markers', ['label', 'value', 'dim'])
-set_namedtuple_default(Markers)
-
 MarkerFunctions = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
 set_namedtuple_default(MarkerFunctions)
 
@@ -106,6 +102,10 @@ class Geometry(object):
     def dim(self):
         return self.mesh.geometry().dim()
 
+
+    @property
+    def facet_normal(self):
+        return df.FacetNormal(self.mesh)
 
     @property
     def dx(self):
