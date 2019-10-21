@@ -362,7 +362,7 @@ def load_local_basis(h5file, lgroup, mesh, geo):
         for name in names:
             lb = Function(V, name=name)
 
-            h5file.read(h5file, lb, lgroup + "/{}".format(name))
+            h5file.read(lb, lgroup + "/{}".format(name))
             setattr(geo, name, lb)
     else:
         setattr(geo, "circumferential", None)

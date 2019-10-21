@@ -104,6 +104,10 @@ class Geometry(object):
 
 
     @property
+    def facet_normal(self):
+        return df.FacetNormal(self.mesh)
+
+    @property
     def dx(self):
         return df.dx(domain=self.mesh, subdomain_data=self.cfun)
 
