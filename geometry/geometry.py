@@ -328,22 +328,6 @@ class Geometry(object):
         return self.crl_basis.c0
 
 
-
-class MixedMeshGeometry(object):
-
-    def __init__(self, geometries=None, labels=None):
-        self.geometries = {}
-        for geo, l in zip(geometries, labels):
-            self.geometries[l] = geo
-
-
-    def add_mesh(self, geometry, label):
-        if not isinstance(geometry, Geometry):
-            msg = "Can only add instances of Geometry. You tried to add an instance of {}".format(type(geometry))
-            raise TypeError(msg)
-        self.geometries[label] = geometry
-
-
 class Geometry2D(Geometry):
 
     def __init__(self, *args, **kwargs):
@@ -398,3 +382,96 @@ class HeartGeometry(Geometry):
         :class:`.Geometry` for more information.
         """
         super(HeartGeometry, self).__init__(*args, **kwargs)
+
+
+class MultiGeometry(object):
+
+    def __init__(self, geometries=None, labels=None):
+        """An object for multiple geometries for FEniCS applications.
+
+        The multi-geometry can be instantiated directly from a collection
+        of Geometry objects
+
+        Example
+        -------
+
+            .. code-block:: python
+
+                import dolfin
+                mesh1 = dolfin.UnitSquareMesh(3,3)
+                mesh2 = dolfin.UnitSquareMesh(5,5)
+                geo1 = Geometry2D(mesh1)
+                geo2 = Geometry2D(mesh2)
+                geo = MutliGeometry(geometries=[geo1, geo2],
+                                        labels=['geo1', 'geo2'])
+
+        Alternatively, Geometry objects can be after instantiating MutliGeometry
+
+        Example
+        -------
+
+            .. code-block:: python
+
+                import dolfin
+                geo = MutliGeometry()
+                mesh1 = dolfin.UnitSquareMesh(3,3)
+                mesh2 = dolfin.UnitSquareMesh(5,5)
+                geo1 = Geometry2D(mesh1)
+                geo2 = Geometry2D(mesh2)
+                geo.add_geometry(geo1)
+                geo.add_geometry(geo2)
+
+        Parameters
+        ----------
+        geometries : list or tuple
+            The geometries that should be part of the MultiGeometry.
+        lables : list or tuple
+            Contains a label for each of the Geometry objects in `geometries`
+        """
+
+        self.geometries = {}
+
+        if geometries is None:
+            self._geo_type = None
+        else:
+            self._geo_type = type(geometries[0])
+
+        if geometries is not None:
+            if len(geometries) != len(labels):
+                msg = "Lists geometries and labels must have the same length."
+                raise ValueError(msg)
+
+            for geometry, l in zip(geometries, labels):
+                if not isinstance(geometry, self._geo_type):
+                    msg = "Can only add geometries of the same type. You tried to add instances of {} and {}".format(type(geo), self._geo_type)
+                    raise TypeError(msg)
+                self.geometries[l] = geometry
+
+
+    def add_geometry(self, geometry, label):
+        """Adds a Geometry object to the MultiGeometry. Geometry object must be
+        of the same type as other Geometry objects contained in the MultiGeometry.
+
+        Parameters
+        ----------
+        geometry : :class:`geometry.Geometry`
+            The geometry to add to the MultiGeometry.
+        label : str
+            A label for the geometry.
+        """
+
+        # Check that correct instance of Geometry is added if self.geometries
+        # already contains geometries
+        if self._geo_type is not None and not isinstance(geometry, self._geo_type):
+            msg = "Can only add instances of Geometry. You tried to add an instance of {}".format(type(geometry))
+            raise TypeError(msg)
+
+        if label in self.geometries.values():
+            msg = "The label '{}' already exists."
+            raise KeyError(msg)
+
+        # If this is the first geometry set self._geo_type
+        if self._geo_type is None:
+            self._geo_type = type(geometry)
+
+        self.geometries[label] = geometry
