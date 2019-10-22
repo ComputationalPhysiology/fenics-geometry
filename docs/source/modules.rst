@@ -1,7 +1,8 @@
 API documentation
 =================
 
-.. toctree::
-   :maxdepth: 4
+.. automodule:: geometry.geometry
+   :members:
 
-   geometry
+.. automodule:: geometry.utils
+   :members:
