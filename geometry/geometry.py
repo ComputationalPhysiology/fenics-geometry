@@ -11,17 +11,76 @@ from .utils import (set_namedtuple_default, namedtuple_as_dict,
                     mpi_comm_world, load_geometry_from_h5,
                     save_geometry_to_h5)
 
-MarkerFunctions = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
-set_namedtuple_default(MarkerFunctions)
+MarkerFunctions_ = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
+set_namedtuple_default(MarkerFunctions_)
 
-MarkerFunctions2D = namedtuple("MarkerFunctions2D", ["vfun", "ffun", "cfun"])
-set_namedtuple_default(MarkerFunctions2D)
+class MarkerFunctions(MarkerFunctions_):
+    """A collection of mesh marker functions.
 
-Microstructure = namedtuple("Microstructure", ["f0", "s0", "n0"])
-set_namedtuple_default(Microstructure)
+    Parameters
+    ----------
+    vfun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for vertex markers.
+    efun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for edge markers.
+    ffun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for facet markers.
+    cfun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for cell markers.
+    """
+    pass
 
-CRLBasis = namedtuple("CRLBasis", ["c0", "r0", "l0"])
-set_namedtuple_default(CRLBasis)
+MarkerFunctions2D_ = namedtuple("MarkerFunctions2D", ["vfun", "ffun", "cfun"])
+set_namedtuple_default(MarkerFunctions2D_)
+
+class MarkerFunctions2D(MarkerFunctions2D_):
+    """A collection of mesh marker functions for 2D geometries.
+
+    Parameters
+    ----------
+    vfun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for vertex markers.
+    ffun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for facet markers.
+    cfun : :class:`dolfin.cpp.mesh.MeshFunction`
+        A mesh function for cell markers.
+    """
+    pass
+
+Microstructure_ = namedtuple("Microstructure", ["f0", "s0", "n0"])
+set_namedtuple_default(Microstructure_)
+
+class Microstructure(Microstructure_):
+    """A collection of the microstructure fields of the geometry.
+
+    Parameters
+    ----------
+    f0 : :class:`dolfin.function.function.Function`
+        A function containing the fibre field.
+    s0 : :class:`dolfin.function.function.Function`
+        A function containing the sheet field.
+    s0 : :class:`dolfin.function.function.Function`
+        A function containing the sheet normal field.
+    """
+    pass
+
+CRLBasis_ = namedtuple("CRLBasis", ["c0", "r0", "l0"])
+set_namedtuple_default(CRLBasis_)
+
+class CRLBasis(CRLBasis_):
+    """A collection of local basis functions (circumferential, radial,
+    longitudinal).
+
+    Parameters
+    ----------
+    c0 : :class:`dolfin.function.function.Function`
+        A function containing the circumferential basis.
+    r0 : :class:`dolfin.function.function.Function`
+        A function containing the radial basis.
+    l0 : :class:`dolfin.function.function.Function`
+        A function containing the sheet longitudinal basis.
+    """
+    pass
 
 
 def get_attribute(obj, key1, key2, default=None):
