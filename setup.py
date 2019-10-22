@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 import os
 import re
 
@@ -23,6 +23,8 @@ setup(name='fenics-geometry',
       author='Alexandra K. Diem',
       author_email='alexandra@simula.no',
       license='LGPL3',
-      packages=['geometry'],
+      packages=find_packages(exclude=["tests", "demos"]),
       install_requires=['pytest', 'fenics'],
+      include_package_data=True,
+      package_data={"pulse.example_meshes": ["*.h5"]},
       zip_safe=False)
