@@ -1,6 +1,13 @@
 geometry package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+
+   geometry.example_meshes
+
 Submodules
 ----------
 
