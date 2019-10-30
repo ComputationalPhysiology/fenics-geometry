@@ -1,5 +1,6 @@
 from pytest import fixture
 import dolfin as df
+import numpy as np
 from geometry import *
 
 
@@ -37,6 +38,34 @@ def test_from_file(tmpdir):
     assert geo_load.markerfunctions.ffun == None
     assert geo_load.markerfunctions.cfun == None
     assert geo_load.markerfunctions.efun == None
+
+
+def test_copy(mesh):
+    geo = Geometry2D(mesh)
+    geo_new = geo.copy(deepcopy=True)
+    assert np.equal(geo.mesh.coordinates(), geo_new.mesh.coordinates()).all()
+    assert geo.markers == geo_new.markers
+    assert geo.markerfunctions.vfun == geo_new.markerfunctions.vfun
+    assert geo.markerfunctions.ffun == geo_new.markerfunctions.ffun
+    assert geo.markerfunctions.cfun == geo_new.markerfunctions.cfun
+    geo = Geometry(mesh)
+    geo_new = geo.copy(deepcopy=True)
+    assert np.equal(geo.mesh.coordinates(), geo_new.mesh.coordinates()).all()
+    assert geo.markers == geo_new.markers
+    assert geo.markerfunctions.vfun == geo_new.markerfunctions.vfun
+    assert geo.markerfunctions.efun == geo_new.markerfunctions.efun
+    assert geo.markerfunctions.ffun == geo_new.markerfunctions.ffun
+    assert geo.markerfunctions.cfun == geo_new.markerfunctions.cfun
+    geo = HeartGeometry.from_file(example_meshes['ellipsoid'])
+    geo_new = geo.copy(deepcopy=True)
+    assert np.equal(geo.mesh.coordinates(), geo_new.mesh.coordinates()).all()
+    assert geo.markers == geo_new.markers
+    assert geo.markerfunctions.vfun == geo_new.markerfunctions.vfun
+    assert geo.markerfunctions.efun == geo_new.markerfunctions.efun
+    assert np.equal(geo.markerfunctions.ffun.array(),
+                                geo_new.markerfunctions.ffun.array()).all()
+    assert np.equal(geo.markerfunctions.cfun.array(),
+                                geo_new.markerfunctions.cfun.array()).all()
 
 
 def test_topology(mesh):

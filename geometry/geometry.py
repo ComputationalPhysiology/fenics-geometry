@@ -83,7 +83,7 @@ class CRLBasis(CRLBasis_):
     pass
 
 
-def get_attribute(obj, key1, key2, default=None):
+def get_attribute(obj, key1, key2=None, default=None):
     f = getattr(obj, key1, None)
     if f is None and key2 is not None:
         f = getattr(obj, key2, default)
@@ -251,7 +251,7 @@ class Geometry(object):
         if deepcopy:
             msg += " with deepcopy."
         df.begin(LogLevel.DEBUG, msg)
-        cp = self.__class__(self._copy(deepcopy))
+        cp = self.__class__(**self._copy(deepcopy))
         df.end()
         return cp
 
@@ -259,15 +259,15 @@ class Geometry(object):
     def _copy(self, deepcopy):
         new_mesh = Mesh(self.mesh)
 
-        new_marker_functions = {}
+        new_markerfunctions = {}
         for dim, fun in ((0, "vfun"), (1, "efun"), (2, "ffun"), (3, "cfun")):
             f_old = get_attribute(self, fun)
             if f_old is None:
                 continue
             f = MeshFunction("size_t", new_mesh, dim, new_mesh.domains())
             f.set_values(f_old.array())
-            marker_functions_[fun] = f
-        marker_functions = MarkerFunctions(**new_marker_functions)
+            new_markerfunctions[fun] = f
+        markerfunctions = MarkerFunctions(**new_markerfunctions)
 
         new_microstructure = {}
         for field in ("f0", "s0", "n0"):
@@ -275,24 +275,24 @@ class Geometry(object):
             if v0_old is None:
                 continue
             v0 = map_vector_field(v0_old, new_mesh)
-            microstructure_[field] = v0
+            new_microstructure[field] = v0
         microstructure = Microstructure(**new_microstructure)
 
-        crl_basis_ = {}
+        new_crl_basis = {}
         for basis in ("c0", "r0", "l0"):
             v0_old = get_attribute(self, basis)
             if v0_old is None:
                 continue
-            v0 = map_vector_field(v0_old, new_mesh, U)
-            crl_basis_[basis] = v0
-        crl_basis = CRLBasis(**crl_basis_)
+            v0 = map_vector_field(v0_old, new_mesh)
+            new_crl_basis[basis] = v0
+        crl_basis = CRLBasis(**new_crl_basis)
 
         return dict(
-            mesh=new_mesh,
-            markers=self.markers,
-            marker_functions=marker_functions,
-            microstructure=microstructure,
-            crl_basis=crl_basis,
+            mesh = new_mesh,
+            markers = self.markers,
+            markerfunctions = markerfunctions,
+            microstructure = microstructure,
+            crl_basis = crl_basis,
         )
 
 
@@ -435,15 +435,15 @@ class Geometry2D(Geometry):
     def _copy(self, deepcopy):
         new_mesh = Mesh(self.mesh)
 
-        new_marker_functions = {}
+        new_markerfunctions = {}
         for dim, fun in ((0, "vfun"), (1, "ffun"), (2, "cfun")):
             f_old = get_attribute(self, fun)
             if f_old is None:
                 continue
             f = MeshFunction("size_t", new_mesh, dim, new_mesh.domains())
             f.set_values(f_old.array())
-            marker_functions_[fun] = f
-        marker_functions = MarkerFunctions(**new_marker_functions)
+            new_markerfunctions[fun] = f
+        markerfunctions = MarkerFunctions2D(**new_markerfunctions)
 
         new_microstructure = {}
         for field in ("f0", "s0", "n0"):
@@ -451,24 +451,24 @@ class Geometry2D(Geometry):
             if v0_old is None:
                 continue
             v0 = map_vector_field(v0_old, new_mesh)
-            microstructure_[field] = v0
+            new_microstructure[field] = v0
         microstructure = Microstructure(**new_microstructure)
 
-        crl_basis_ = {}
+        new_crl_basis = {}
         for basis in ("c0", "r0", "l0"):
             v0_old = get_attribute(self, basis)
             if v0_old is None:
                 continue
-            v0 = map_vector_field(v0_old, new_mesh, U)
-            crl_basis_[basis] = v0
-        crl_basis = CRLBasis(**crl_basis_)
+            v0 = map_vector_field(v0_old, new_mesh)
+            new_crl_basis[basis] = v0
+        crl_basis = CRLBasis(**new_crl_basis)
 
         return dict(
-            mesh=new_mesh,
-            markers=self.markers,
-            marker_functions=marker_functions,
-            microstructure=microstructure,
-            crl_basis=crl_basis,
+            mesh = new_mesh,
+            markers = self.markers,
+            markerfunctions = markerfunctions,
+            microstructure = microstructure,
+            crl_basis = crl_basis,
         )
 
 
@@ -483,7 +483,7 @@ class HeartGeometry(Geometry):
 
     @classmethod
     def _load_from_file(cls, h5name, h5group, comm):
-        super()._load_from_file(h5name, h5group, comm)
+        return super()._load_from_file(h5name, h5group, comm)
 
 
     def _copy(self, deepcopy):
@@ -557,9 +557,9 @@ class MultiGeometry(object):
     @classmethod
     def _load_from_file(cls, h5name, h5group, comm, geometry_type=Geometry):
         if h5name is not list:
-            geometry_type._load_from_file(h5name, h5group, comm)
+            return geometry_type._load_from_file(h5name, h5group, comm)
         for h in h5name:
-            geometry_type._load_from_file(h, h5group, comm)
+            return geometry_type._load_from_file(h, h5group, comm)
 
 
     def _copy(self, deepcopy):
