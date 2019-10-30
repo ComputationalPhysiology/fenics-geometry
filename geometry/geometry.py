@@ -4,12 +4,12 @@ has been extended to account for arbitrary geometries.
 
 from collections import namedtuple
 
-from dolfin import (MeshFunction, LogLevel)
+from dolfin import (LogLevel, Mesh, MeshFunction)
 import dolfin as df
 
-from .utils import (set_namedtuple_default, namedtuple_as_dict,
-                    mpi_comm_world, load_geometry_from_h5,
-                    save_geometry_to_h5)
+from .utils import (load_geometry_from_h5, map_vector_field, mpi_comm_world,
+                    namedtuple_as_dict, save_geometry_to_h5,
+                    set_namedtuple_default,)
 
 MarkerFunctions_ = namedtuple("MarkerFunctions", ["vfun", "efun", "ffun", "cfun"])
 set_namedtuple_default(MarkerFunctions_)
@@ -239,6 +239,63 @@ class Geometry(object):
         df.end()
 
 
+    def copy(self, deepcopy=False):
+        """Returns a copy of self.
+
+        Parameters
+        ----------
+        deepcopy : bool
+            True if copy should be deep, default False.
+        """
+        msg = "Copying geometry"
+        if deepcopy:
+            msg += " with deepcopy."
+        df.begin(LogLevel.DEBUG, msg)
+        cp = self.__class__(self._copy(deepcopy))
+        df.end()
+        return cp
+
+
+    def _copy(self, deepcopy):
+        new_mesh = Mesh(self.mesh)
+
+        new_marker_functions = {}
+        for dim, fun in ((0, "vfun"), (1, "efun"), (2, "ffun"), (3, "cfun")):
+            f_old = get_attribute(self, fun)
+            if f_old is None:
+                continue
+            f = MeshFunction("size_t", new_mesh, dim, new_mesh.domains())
+            f.set_values(f_old.array())
+            marker_functions_[fun] = f
+        marker_functions = MarkerFunctions(**new_marker_functions)
+
+        new_microstructure = {}
+        for field in ("f0", "s0", "n0"):
+            v0_old = get_attribute(self, field)
+            if v0_old is None:
+                continue
+            v0 = map_vector_field(v0_old, new_mesh)
+            microstructure_[field] = v0
+        microstructure = Microstructure(**new_microstructure)
+
+        crl_basis_ = {}
+        for basis in ("c0", "r0", "l0"):
+            v0_old = get_attribute(self, basis)
+            if v0_old is None:
+                continue
+            v0 = map_vector_field(v0_old, new_mesh, U)
+            crl_basis_[basis] = v0
+        crl_basis = CRLBasis(**crl_basis_)
+
+        return dict(
+            mesh=new_mesh,
+            markers=self.markers,
+            marker_functions=marker_functions,
+            microstructure=microstructure,
+            crl_basis=crl_basis,
+        )
+
+
     def topology(self):
         """Returns the topology of the geometry.
         """
@@ -375,6 +432,46 @@ class Geometry2D(Geometry):
         return kwargs
 
 
+    def _copy(self, deepcopy):
+        new_mesh = Mesh(self.mesh)
+
+        new_marker_functions = {}
+        for dim, fun in ((0, "vfun"), (1, "ffun"), (2, "cfun")):
+            f_old = get_attribute(self, fun)
+            if f_old is None:
+                continue
+            f = MeshFunction("size_t", new_mesh, dim, new_mesh.domains())
+            f.set_values(f_old.array())
+            marker_functions_[fun] = f
+        marker_functions = MarkerFunctions(**new_marker_functions)
+
+        new_microstructure = {}
+        for field in ("f0", "s0", "n0"):
+            v0_old = get_attribute(self, field)
+            if v0_old is None:
+                continue
+            v0 = map_vector_field(v0_old, new_mesh)
+            microstructure_[field] = v0
+        microstructure = Microstructure(**new_microstructure)
+
+        crl_basis_ = {}
+        for basis in ("c0", "r0", "l0"):
+            v0_old = get_attribute(self, basis)
+            if v0_old is None:
+                continue
+            v0 = map_vector_field(v0_old, new_mesh, U)
+            crl_basis_[basis] = v0
+        crl_basis = CRLBasis(**crl_basis_)
+
+        return dict(
+            mesh=new_mesh,
+            markers=self.markers,
+            marker_functions=marker_functions,
+            microstructure=microstructure,
+            crl_basis=crl_basis,
+        )
+
+
 class HeartGeometry(Geometry):
 
     def __init__(self, *args, **kwargs):
@@ -382,6 +479,15 @@ class HeartGeometry(Geometry):
         :class:`.Geometry` for more information.
         """
         super(HeartGeometry, self).__init__(*args, **kwargs)
+
+
+    @classmethod
+    def _load_from_file(cls, h5name, h5group, comm):
+        super()._load_from_file(h5name, h5group, comm)
+
+
+    def _copy(self, deepcopy):
+        return super(HeartGeometry, self)._copy(deepcopy)
 
 
 class MultiGeometry(object):
@@ -446,6 +552,26 @@ class MultiGeometry(object):
                     msg = "Can only add geometries of the same type. You tried to add instances of {} and {}".format(type(geo), self._geo_type)
                     raise TypeError(msg)
                 self.geometries[l] = geometry
+
+
+    @classmethod
+    def _load_from_file(cls, h5name, h5group, comm, geometry_type=Geometry):
+        if h5name is not list:
+            geometry_type._load_from_file(h5name, h5group, comm)
+        for h in h5name:
+            geometry_type._load_from_file(h, h5group, comm)
+
+
+    def _copy(self, deepcopy):
+        if not self.geometries:
+            msg = "The MultiGeometry is empty."
+            raise KeyError(msg)
+
+        new_geometries = {}
+        for key, value in self.geometries:
+            new_geometries[key] = value._copy(deepcopy)
+
+        return new_geometries
 
 
     def add_geometry(self, geometry, label):
