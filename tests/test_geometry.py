@@ -56,7 +56,7 @@ def test_copy(mesh):
     assert geo.markerfunctions.efun == geo_new.markerfunctions.efun
     assert geo.markerfunctions.ffun == geo_new.markerfunctions.ffun
     assert geo.markerfunctions.cfun == geo_new.markerfunctions.cfun
-    geo = HeartGeometry.from_file(example_meshes['ellipsoid'])
+    geo = HeartGeometry.from_file('./geometry/example_meshes/ellipsoid.h5')
     geo_new = geo.copy(deepcopy=True)
     assert np.equal(geo.mesh.coordinates(), geo_new.mesh.coordinates()).all()
     assert geo.markers == geo_new.markers
