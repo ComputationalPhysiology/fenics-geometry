@@ -41,6 +41,14 @@ def test_set_namedtuple_default():
     assert tup.val2 == default
 
 
+def test_map_vector_field(mesh2d):
+    mesh = mesh2d
+    VF = df.VectorFunctionSpace(mesh, 'P', 1)
+    v = Function(VF)
+    mesh_new = df.Mesh(mesh)
+    v_new = map_vector_field(v, mesh_new)
+
+
 def test_load_geometry_from_h5(h5name):
     geo = load_geometry_from_h5(h5name)
     assert hasattr(geo, 'f0')

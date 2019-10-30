@@ -51,6 +51,22 @@ def set_namedtuple_default(NamedTuple, default=None):
     NamedTuple.__new__.__defaults__ = (default,) * len(NamedTuple._fields)
 
 
+def map_vector_field(v0, new_mesh):
+    """Maps a vector field (v0) onto a new mesh (new_mesh).
+
+    :param v0 Function: Dolfin Function containing the vector field
+    :param new_mesh Mesh: Dolfin Mesh that v0 should be mapped to
+    :param label str: A label for v0
+    :param normalize bool: True if vector field should be normalized
+    """
+
+    ufl_elem = v0.function_space().ufl_element()
+    v0_new = Function(FunctionSpace(new_mesh, ufl_elem))
+    v0_new.vector()[:] = v0.vector()
+
+    return v0_new
+
+
 def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
                             include_sheets=True, comm=mpi_comm_world,
 ):
