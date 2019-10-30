@@ -239,6 +239,23 @@ class Geometry(object):
         df.end()
 
 
+    def copy(self, deepcopy=False):
+        """Returns a copy of self.
+
+        Parameters
+        ----------
+        deepcopy : bool
+            True if copy should be deep, default False.
+        """
+        msg = "Copying geometry"
+        if deepcopy:
+            msg += " with deepcopy."
+        df.begin(LogLevel.DEBUG, msg)
+        cp = self._copy(deepcopy=deepcopy)
+        df.end()
+        return cp
+
+
     def topology(self):
         """Returns the topology of the geometry.
         """
@@ -384,6 +401,11 @@ class HeartGeometry(Geometry):
         super(HeartGeometry, self).__init__(*args, **kwargs)
 
 
+    @classmethod
+    def _load_from_file(cls, h5name, h5group, comm):
+        super()._load_from_file(h5name, h5group, comm)
+
+
 class MultiGeometry(object):
 
     def __init__(self, geometries=None, labels=None):
@@ -446,6 +468,14 @@ class MultiGeometry(object):
                     msg = "Can only add geometries of the same type. You tried to add instances of {} and {}".format(type(geo), self._geo_type)
                     raise TypeError(msg)
                 self.geometries[l] = geometry
+
+
+    @classmethod
+    def _load_from_file(cls, h5name, h5group, comm, geometry_type=Geometry):
+        if h5name is not list:
+            geometry_type._load_from_file(h5name, h5group, comm)
+        for h in h5name:
+            geometry_type._load_from_file(h, h5group, comm)
 
 
     def add_geometry(self, geometry, label):
