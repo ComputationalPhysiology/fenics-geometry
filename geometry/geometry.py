@@ -432,6 +432,10 @@ class Geometry2D(Geometry):
         return kwargs
 
 
+    def copy(self, deepcopy=False):
+        return super(Geometry2D, self).copy(deepcopy=deepcopy)
+
+
     def _copy(self, deepcopy):
         new_mesh = Mesh(self.mesh)
 
@@ -484,6 +488,10 @@ class HeartGeometry(Geometry):
     @classmethod
     def _load_from_file(cls, h5name, h5group, comm):
         return super()._load_from_file(h5name, h5group, comm)
+
+
+    def copy(self, deepcopy=False):
+        return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
 
     def _copy(self, deepcopy):
@@ -562,7 +570,7 @@ class MultiGeometry(object):
             return geometry_type._load_from_file(h, h5group, comm)
 
 
-    def _copy(self, deepcopy):
+    def copy(self, deepcopy):
         if not self.geometries:
             msg = "The MultiGeometry is empty."
             raise KeyError(msg)
