@@ -499,6 +499,19 @@ class HeartGeometry(Geometry):
             raise KeyError("Geometry is missing marker for ENDO_LV/ENDO.")
 
 
+    def get_rv_marker(self):
+        if not self.has_rv():
+            raise KeyError("Geometry is not biventricular.")
+        elif "ENDO_RV" in self.geometry.markers:
+            return self.geometry.markers["ENDO_RV"][0]
+        else:
+            raise KeyError("Geometry is missing marker for ENDO_RV.")
+
+
+    def has_rv(self):
+        return "ENDO_RV" in self.markers.keys()
+
+
     def copy(self, deepcopy=False):
         return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
