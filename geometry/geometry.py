@@ -490,6 +490,42 @@ class HeartGeometry(Geometry):
         return super()._load_from_file(h5name, h5group, comm)
 
 
+    def get_lv_marker(self):
+        if "ENDO" in self.geometry.markers:
+            return self.geometry.markers["ENDO"][0]
+        elif "ENDO_LV" in self.geometry.markers:
+            return self.geometry.markers["ENDO_LV"][0]
+        else:
+            raise KeyError("Geometry is missing marker for ENDO_LV/ENDO.")
+
+
+    def get_rv_marker(self):
+        if not self.has_rv():
+            raise KeyError("Geometry is not biventricular.")
+        elif "ENDO_RV" in self.geometry.markers:
+            return self.geometry.markers["ENDO_RV"][0]
+        else:
+            raise KeyError("Geometry is missing marker for ENDO_RV.")
+
+
+    def has_rv(self):
+        return "ENDO_RV" in self.markers.keys()
+
+
+    def get_epi_marker(self):
+        if "EPI" in self.geometry.markers:
+            return self.geometry.markers["EPI"][0]
+        else:
+            raise KeyError("Geometry is missing marker for EPI.")
+
+
+    def get_base_marker(self):
+        if "BASE" in self.geometry.markers:
+            return self.geometry.markers["BASE"][0]
+        else:
+            raise KeyError("Geometry is missing marker for BASE.")
+
+
     def copy(self, deepcopy=False):
         return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
