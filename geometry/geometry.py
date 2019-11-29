@@ -512,6 +512,13 @@ class HeartGeometry(Geometry):
         return "ENDO_RV" in self.markers.keys()
 
 
+    def get_epi_marker(self):
+        if "EPI" in self.geometry.markers:
+            return self.geometry.markers["EPI"][0]
+        else:
+            raise KeyError("Geometry is missing marker for EPI.")
+
+
     def copy(self, deepcopy=False):
         return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
