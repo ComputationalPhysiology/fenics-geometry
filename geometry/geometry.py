@@ -519,6 +519,13 @@ class HeartGeometry(Geometry):
             raise KeyError("Geometry is missing marker for EPI.")
 
 
+    def get_base_marker(self):
+        if "BASE" in self.geometry.markers:
+            return self.geometry.markers["BASE"][0]
+        else:
+            raise KeyError("Geometry is missing marker for BASE.")
+
+
     def copy(self, deepcopy=False):
         return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
