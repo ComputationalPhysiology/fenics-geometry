@@ -490,6 +490,15 @@ class HeartGeometry(Geometry):
         return super()._load_from_file(h5name, h5group, comm)
 
 
+    def get_lv_marker(self):
+        if "ENDO" in self.geometry.markers:
+            return self.geometry.markers["ENDO"][0]
+        elif "ENDO_LV" in self.geometry.markers:
+            return self.geometry.markers["ENDO_LV"][0]
+        else:
+            raise KeyError("Geometry is missing marker for ENDO_LV/ENDO.")
+
+
     def copy(self, deepcopy=False):
         return super(HeartGeometry, self).copy(deepcopy=deepcopy)
 
