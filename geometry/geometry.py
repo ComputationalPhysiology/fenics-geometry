@@ -491,9 +491,9 @@ class HeartGeometry(Geometry):
 
 
     def get_lv_marker(self):
-        if "ENDO" in self.markers:
+        if "ENDO" in self.markers.keys():
             return self.markers["ENDO"][0]
-        elif "ENDO_LV" in self.markers:
+        elif "ENDO_LV" in self.markers.keys():
             return self.markers["ENDO_LV"][0]
         else:
             raise KeyError("Geometry is missing marker for ENDO_LV/ENDO.")
@@ -502,7 +502,7 @@ class HeartGeometry(Geometry):
     def get_rv_marker(self):
         if not self.has_rv():
             raise KeyError("Geometry is not biventricular.")
-        elif "ENDO_RV" in self.markers:
+        elif "ENDO_RV" in self.markers.keys():
             return self.markers["ENDO_RV"][0]
         else:
             raise KeyError("Geometry is missing marker for ENDO_RV.")
@@ -513,14 +513,14 @@ class HeartGeometry(Geometry):
 
 
     def get_epi_marker(self):
-        if "EPI" in self.markers:
+        if "EPI" in self.markers.keys():
             return self.markers["EPI"][0]
         else:
             raise KeyError("Geometry is missing marker for EPI.")
 
 
     def get_base_marker(self):
-        if "BASE" in self.markers:
+        if "BASE" in self.markers.keys():
             return self.markers["BASE"][0]
         else:
             raise KeyError("Geometry is missing marker for BASE.")
