@@ -411,7 +411,8 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
             fsubgroup = fgroup + "/{}".format(name)
             if not h5file.has_dataset(fsubgroup):
                 msg = ("H5File does not have dataset {}").format(fsubgroup)
-                logger.warning(msg)
+                # FIXME: implement logger
+                # logger.warning(msg)
 
         elm = VectorElement(family=family, cell=mesh.ufl_cell(),
                                     degree=int(order), quad_scheme="default")
