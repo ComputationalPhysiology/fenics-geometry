@@ -240,6 +240,7 @@ def save_geometry_to_h5(mesh, h5name, h5group="", markers=None,
         for key in microstructure.keys():
             ms = microstructure[key]
             if ms is not None:
+                fgroup = "{}/microstructure".format(h5group)
                 name = "_".join(filter(None, [str(ms), key]))
                 fsubgroup = "{}/{}".format(fgroup, name)
                 h5file.write(microstructure[key], fsubgroup)
