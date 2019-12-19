@@ -418,7 +418,6 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
         V = FunctionSpace(mesh, elm)
 
         attrs = ["f0", "s0", "n0"]
-        from IPython import embed; embed()
         for i, name in enumerate(names):
             func = Function(V, name=name)
             fsubgroup = fgroup + "/{}".format(name)
