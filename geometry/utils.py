@@ -91,7 +91,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
     ggroup = "{}/geometry".format(h5group)
     mgroup = "{}/mesh".format(ggroup)
     lgroup = "{}/local basis functions".format(h5group)
-    fgroup = "{}/microstructure/".format(h5group)
+    fgroup = "{}/microstructure".format(h5group)
 
     if not os.path.isfile(h5name):
         raise IOError("File {} does not exist".format(h5name))
@@ -241,8 +241,7 @@ def save_geometry_to_h5(mesh, h5name, h5group="", markers=None,
             ms = microstructure[key]
             if ms is not None:
                 fgroup = "{}/microstructure".format(h5group)
-                name = "_".join(filter(None, [str(ms), key]))
-                fsubgroup = "{}/{}".format(fgroup, name)
+                fsubgroup = "{}/{}".format(fgroup, key)
                 h5file.write(microstructure[key], fsubgroup)
                 h5file.attributes(fsubgroup)["name"] = key
                 elm = ms.function_space().ufl_element()
@@ -419,6 +418,7 @@ def load_microstructure(h5file, fgroup, mesh, geo, include_sheets=True):
         V = FunctionSpace(mesh, elm)
 
         attrs = ["f0", "s0", "n0"]
+        from IPython import embed; embed()
         for i, name in enumerate(names):
             func = Function(V, name=name)
             fsubgroup = fgroup + "/{}".format(name)
