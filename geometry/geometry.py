@@ -308,6 +308,12 @@ class Geometry(object):
         return self.mesh.geometry().dim()
 
 
+    def ufl_cell(self):
+        """Returns the UFL cell of the geometry.
+        """
+        return self.mesh.ufl_cell()
+
+
     @property
     def facet_normal(self):
         return df.FacetNormal(self.mesh)
