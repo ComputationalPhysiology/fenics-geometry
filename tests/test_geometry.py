@@ -78,6 +78,11 @@ def test_dim(mesh):
     assert geo.dim() == mesh.topology().dim()
 
 
+def test_ufl_cell(mesh):
+    geo = Geometry2D(mesh)
+    assert geo.ufl_cell() == mesh.ufl_cell()
+
+
 @fixture
 def mesh():
     return df.UnitSquareMesh(2,2)
