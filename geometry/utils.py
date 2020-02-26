@@ -86,7 +86,6 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
     :rtype: object
 
     """
-
     # Set default groups
     ggroup = "{}/geometry".format(h5group)
     mgroup = "{}/mesh".format(ggroup)
@@ -118,7 +117,7 @@ def load_geometry_from_h5(h5name, h5group="", fendo=None, fepi=None,
 
         # Load mesh
         mesh = Mesh(comm)
-        h5file.read(mesh, mgroup, True)
+        h5file.read(mesh, mgroup, False)
         geo.mesh = mesh
 
         # Get mesh functions
