@@ -347,11 +347,6 @@ def check_h5group(h5name, h5group, delete=False, comm=mpi_comm_world):
 
 
 def open_h5py(h5name, file_mode="a", comm=mpi_comm_world):
-    print(type(comm)); 
-    print(has_mpi4py, has_petsc4py)
-    print(mpi4py.MPI.Intracomm)
-    print(petsc4py.PETSc.Comm)
-    exit();
 
     if parallel_h5py:
         if has_mpi4py and has_petsc4py:
