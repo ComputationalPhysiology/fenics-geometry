@@ -19,7 +19,7 @@ else:
     from mpi4py import MPI as mpi4py_MPI
 
 try:
-    import petsc4py
+    import petsc4py.PETSc
     has_petsc4py = True
 except ImportError:
     has_petsc4py = False
